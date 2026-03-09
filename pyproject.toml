@@ -1,0 +1,53 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "microbe"
+version = "0.1.0"
+description = "Microservices principles applied to AI agents. Independently deployable workers with human-readable YAML workflows."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+    { name = "Josh B" },
+]
+keywords = ["agents", "ai", "llm", "microservices", "orchestration", "dag"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "openai>=1.0.0",
+    "pyyaml>=6.0.0",
+    "arq>=0.26.0",
+    "click>=8.0.0",
+    "jinja2>=3.1.0",
+    "pydantic>=2.0.0",
+    "sqlmodel>=0.0.22",
+    "asyncpg>=0.29.0",
+    "httpx>=0.27.0",
+    "tenacity>=8.2.0",
+    "redis<5.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.23.0",
+]
+tools = [
+    "cohere>=5.0.0",
+    "feedparser>=6.0.0",
+]
+
+[project.scripts]
+microbe = "microbe.cli:cli"
+
+[project.urls]
+Homepage = "https://github.com/joshb/microbe"
+Repository = "https://github.com/joshb/microbe"

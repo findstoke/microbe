@@ -1,0 +1,26 @@
+# Example Workflow — Summarize and Respond
+#
+# A simple two-step workflow:
+# 1. Summarize the input text
+# 2. Generate a response based on the summary
+#
+# Edit this file to change the flow. Reorder steps,
+# add new ones, or swap out agents.
+
+name: example
+description: "Summarize input and generate a response"
+
+steps:
+  - id: summarize
+    agent: example
+    description: "Summarize the input text"
+    input:
+      text: "{{ trigger.text }}"
+
+  - id: respond
+    agent: example
+    description: "Generate a response based on the summary"
+    depends_on: [summarize]
+    input:
+      summary: "{{ steps.summarize.output.content }}"
+      original_text: "{{ trigger.text }}"

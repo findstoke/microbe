@@ -1,0 +1,143 @@
+"""
+{{ project_name }} — Microbe Worker
+
+Arq worker that processes steps from the shared Redis queue.
+Each agent filters by its own agent_type.
+"""
+
+import os
+import yaml
+import asyncio
+from pathlib import Path
+
+from arq import Worker
+from arq.connections import RedisSettings, ArqRedis
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+
+from microbe import Orchestrator, Workflow, Agent, UniversalAgent
+from microbe.models import Task, Step
+
+
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:password@localhost:5432/{{ project_name }}")
+REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+AGENT_FILTER = os.getenv("MICROBE_AGENT_FILTER")  # Optional: filter to one agent
+
+engine = create_async_engine(DATABASE_URL, echo=False)
+async_session = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
+
+
+# ---------------------------------------------------------------------------
+# Agent Discovery
+# ---------------------------------------------------------------------------
+
+def discover_agents() -> dict:
+    """Load agent configs from agents/ directory."""
+    agents_dir = Path("agents")
+    agents = {}
+    if agents_dir.exists():
+        for f in agents_dir.glob("*.yaml"):
+            with open(f) as fh:
+                config = yaml.safe_load(fh)
+                agent_type = config.get("agent_type", f.stem)
+                agents[agent_type] = config
+    return agents
+
+
+# ---------------------------------------------------------------------------
+# Worker Tasks
+# ---------------------------------------------------------------------------
+
+async def process_step(ctx, step_id: str, task_id: str, **kwargs):
+    """Process a single step. Called by Arq when a job is dequeued."""
+    async with async_session() as db:
+        orchestrator = Orchestrator(task_id=task_id, db=db)
+        result = await orchestrator.execute_step(step_id)
+
+        if not result.error:
+            # Load workflow and advance DAG
+            task_stmt = await db.execute(
+                __import__("sqlalchemy").select(Task).where(Task.id == task_id)
+            )
+            task = task_stmt.scalar_one_or_none()
+            if task:
+                workflow_path = Path("workflows") / f"{task.workflow_id}.yaml"
+                if workflow_path.exists():
+                    workflow = Workflow.from_yaml(str(workflow_path))
+                    ready = await orchestrator.advance(workflow)
+
+                    # Enqueue newly ready steps
+                    redis: ArqRedis = ctx.get("redis") or ctx.get("pool")
+                    for step in ready:
+                        await redis.enqueue_job(
+                            "process_step",
+                            step_id=step.id,
+                            task_id=task_id,
+                        )
+
+        return result.data if not result.error else {"error": result.error}
+
+
+async def start_workflow(ctx, workflow_id: str, trigger_data: dict, **kwargs):
+    """Start a new workflow execution."""
+    async with async_session() as db:
+        # Create task
+        task = Task(workflow_id=workflow_id, trigger_data=trigger_data)
+        db.add(task)
+        await db.commit()
+
+        # Load workflow
+        workflow_path = Path("workflows") / f"{workflow_id}.yaml"
+        if not workflow_path.exists():
+            return {"error": f"Workflow '{workflow_id}' not found"}
+
+        workflow = Workflow.from_yaml(str(workflow_path))
+
+        # Initialize and dispatch root steps
+        orchestrator = Orchestrator(task_id=task.id, db=db)
+        await orchestrator.initialize_steps(workflow, trigger_data)
+
+        # Enqueue root steps
+        root_steps = await orchestrator._get_steps(status="pending")
+        redis: ArqRedis = ctx.get("redis") or ctx.get("pool")
+        for step in root_steps:
+            await redis.enqueue_job(
+                "process_step",
+                step_id=step.id,
+                task_id=task.id,
+            )
+
+        return {"task_id": task.id, "steps_enqueued": len(root_steps)}
+
+
+# ---------------------------------------------------------------------------
+# Arq Worker Settings
+# ---------------------------------------------------------------------------
+
+async def startup(ctx):
+    """Worker startup hook."""
+    print(f"🦠 Microbe worker starting...")
+    agents = discover_agents()
+    print(f"   Discovered {len(agents)} agent(s): {list(agents.keys())}")
+    if AGENT_FILTER:
+        print(f"   Filtering for agent_type: {AGENT_FILTER}")
+
+
+async def shutdown(ctx):
+    """Worker shutdown hook."""
+    print("🦠 Microbe worker shutting down...")
+    await engine.dispose()
+
+
+class WorkerSettings:
+    queue_name = "microbe"
+    functions = [process_step, start_workflow]
+    on_startup = startup
+    on_shutdown = shutdown
+    redis_settings = RedisSettings.from_dsn(REDIS_URL)
+    max_jobs = 10
+    job_timeout = 600

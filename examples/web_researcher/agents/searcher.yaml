@@ -1,0 +1,23 @@
+name: searcher
+agent_type: searcher
+description: "Executes web searches and returns structured results"
+model: gpt-4o-mini
+provider: openai
+temperature: 0.1
+response_format: json
+system_prompt: |
+  You are a web search agent. Given a search query, use the provided
+  context to extract the most relevant and high-signal information.
+
+  Return JSON:
+  {
+    "query": "The original search query",
+    "results": [
+      {
+        "title": "Result title",
+        "url": "https://...",
+        "content": "Key excerpt or finding (2-3 sentences)"
+      }
+    ],
+    "summary": "Brief synthesis of what was found"
+  }

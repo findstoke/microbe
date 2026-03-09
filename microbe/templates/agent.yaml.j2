@@ -1,0 +1,21 @@
+# Agent: {{ agent_name }}
+#
+# This YAML defines the agent's behavior.
+# The UniversalAgent will use these settings to make LLM calls.
+# For custom logic, create a Python class that extends microbe.Agent.
+
+name: {{ agent_name }}
+agent_type: {{ agent_type }}
+description: "{{ description }}"
+model: {{ model }}
+provider: {{ provider }}
+temperature: 0.3
+max_tokens: 2000
+response_format: json
+system_prompt: |
+  You are a helpful assistant. Process the input and return a JSON response.
+
+  Return JSON with this structure:
+  {
+    "content": "Your response here"
+  }

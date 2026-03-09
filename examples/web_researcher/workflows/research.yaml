@@ -1,0 +1,34 @@
+# Web Researcher Workflow
+#
+# A multi-step research pipeline:
+# 1. PLANNER breaks the query into search strategies
+# 2. SEARCHER executes web searches (fan-out per query)
+# 3. SYNTHESIZER combines all findings into a report
+#
+# To customize: reorder steps, change agents, or add your own.
+
+name: research
+description: "Research a topic using search and synthesis"
+
+steps:
+  - id: plan
+    agent: planner
+    description: "Break the research query into targeted search strategies"
+    input:
+      query: "{{ trigger.query }}"
+
+  - id: search
+    agent: searcher
+    description: "Execute web searches for each strategy"
+    depends_on: [plan]
+    foreach: "{{ steps.plan.output.queries }}"
+    input:
+      query: "{{ item }}"
+
+  - id: synthesize
+    agent: synthesizer
+    description: "Combine all search results into a final research report"
+    depends_on: [search]
+    input:
+      results: "{{ steps.search.output.* }}"
+      original_query: "{{ trigger.query }}"
