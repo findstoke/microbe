@@ -3,9 +3,11 @@
 I'm still actively working on adding in additional error handling and publishing to PyPI. If you want to try it, clone the repo and then run the commands from inside the cloned repository.
 
 # Clone and install locally
+```bash
 git clone https://github.com/joshb/microbe.git
 cd microbe
 pip install -e ".[dashboard]"
+```
 
 
 # 🦠 Microbe
