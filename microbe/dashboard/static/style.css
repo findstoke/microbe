@@ -1,0 +1,866 @@
+/* ==========================================================================
+   Microbe Dashboard — Uptime Kuma-style dark theme
+   ========================================================================== */
+
+:root {
+  /* Background palette — matches Uptime Kuma's near-black */
+  --bg-body: #0c0e14;
+  --bg-sidebar: #0f1119;
+  --bg-card: #181b26;
+  --bg-card-hover: #1e2230;
+  --bg-input: #12141c;
+  --bg-header: #0f1119;
+
+  /* Borders */
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --border-card: rgba(255, 255, 255, 0.07);
+  --border-hover: rgba(255, 255, 255, 0.12);
+
+  /* Status colors — Uptime Kuma palette */
+  --color-up: #5cdd8b;
+  --color-up-bg: rgba(92, 221, 139, 0.1);
+  --color-up-glow: rgba(92, 221, 139, 0.2);
+  --color-down: #dc3545;
+  --color-down-bg: rgba(220, 53, 69, 0.1);
+  --color-down-glow: rgba(220, 53, 69, 0.2);
+  --color-pending: #f0ad4e;
+  --color-pending-bg: rgba(240, 173, 78, 0.1);
+  --color-pending-glow: rgba(240, 173, 78, 0.2);
+  --color-maint: #636e72;
+  --color-maint-bg: rgba(99, 110, 114, 0.08);
+
+  /* Accent — green like Uptime Kuma */
+  --color-accent: #5cdd8b;
+  --color-accent-dim: rgba(92, 221, 139, 0.08);
+  --color-spawned: #74b9ff;
+
+  /* Text */
+  --text-primary: #e2e8ee;
+  --text-secondary: #8c939d;
+  --text-muted: #4e555e;
+
+  /* Sizing */
+  --sidebar-width: 260px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-pill: 100px;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family:
+    "Inter",
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  background: var(--bg-body);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==========================================================================
+   Layout
+   ========================================================================== */
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ==========================================================================
+   Sidebar — matches Uptime Kuma left panel
+   ========================================================================== */
+
+.sidebar {
+  width: var(--sidebar-width);
+  background: var(--bg-sidebar);
+  border-right: 1px solid var(--border-subtle);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 100;
+}
+
+.sidebar-brand {
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.brand-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.brand-text {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.3px;
+  color: var(--text-primary);
+}
+
+.sidebar-nav {
+  list-style: none;
+  padding: 10px 8px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  text-decoration: none;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.nav-link.active {
+  color: var(--text-primary);
+  background: var(--color-accent-dim);
+}
+
+.nav-icon {
+  width: 17px;
+  height: 17px;
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.nav-link.active .nav-icon {
+  opacity: 1;
+}
+
+.sidebar-footer {
+  padding: 12px 18px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.version-badge {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 3px 8px;
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   Main Content Area
+   ========================================================================== */
+
+.main-content {
+  margin-left: var(--sidebar-width);
+  flex: 1;
+  min-height: 100vh;
+}
+
+.page-header {
+  padding: 22px 30px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.page-header h1 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--text-primary);
+}
+
+.content-body {
+  padding: 18px 30px 40px;
+}
+
+/* ==========================================================================
+   Task Cards — Uptime Kuma monitor list style
+   ========================================================================== */
+
+.task-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.task-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.task-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
+}
+
+/* Status dot — pulsing like Uptime Kuma */
+.task-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.task-status-dot.completed {
+  background: var(--color-up);
+  box-shadow: 0 0 6px var(--color-up-glow);
+}
+
+.task-status-dot.running {
+  background: var(--color-up);
+  box-shadow: 0 0 6px var(--color-up-glow);
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+
+.task-status-dot.pending {
+  background: var(--color-up);
+  opacity: 0.5;
+}
+
+.task-status-dot.failed {
+  background: var(--color-down);
+  box-shadow: 0 0 6px var(--color-down-glow);
+}
+
+.task-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.task-workflow-name {
+  font-weight: 600;
+  font-size: 14px;
+  margin-bottom: 1px;
+}
+
+.task-id {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-family: "SF Mono", "Cascadia Code", "Fira Code", monospace;
+  font-size: 11px;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Heartbeat Bar — the signature Uptime Kuma element
+   ========================================================================== */
+
+.heartbeat-bar {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  height: 32px;
+  background: var(--bg-input);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-card);
+}
+
+.heartbeat-bar .beat {
+  width: 6px;
+  height: 18px;
+  border-radius: 3px;
+  background: var(--color-up);
+  opacity: 0.9;
+  transition: transform 0.2s ease;
+}
+
+.heartbeat-bar .beat:hover {
+  transform: scaleY(1.2);
+}
+
+.heartbeat-bar .beat.down {
+  background: var(--color-down);
+}
+
+.heartbeat-bar .beat.pending {
+  background: var(--color-up);
+  animation: pulse-beat 1.5s ease-in-out infinite;
+}
+
+.heartbeat-bar .beat.empty {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+@keyframes pulse-beat {
+  0%,
+  100% {
+    opacity: 0.9;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+
+/* ==========================================================================
+   Status Pill / Badge — Uptime Kuma's rounded elements
+   ========================================================================== */
+
+.status-pill {
+  font-size: 10px;
+  font-weight: 800;
+  /* No text-transform: uppercase */
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.status-pill.completed {
+  color: #111;
+  background: var(--color-up);
+}
+
+.status-pill.running {
+  color: #111;
+  background: var(--color-up);
+}
+
+.status-pill.pending {
+  color: #111;
+  background: var(--color-up);
+}
+
+.status-pill.failed {
+  color: #fff;
+  background: var(--color-down);
+}
+
+/* Large status badge - like Uptime Kuma's "Up" circle */
+.status-badge-lg {
+  font-size: 14px;
+  font-weight: 800;
+  padding: 6px 16px;
+  border-radius: var(--radius-pill);
+  /* No text-transform: uppercase */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.status-badge-lg.completed,
+.status-badge-lg.success {
+  color: #111;
+  background: var(--color-up);
+}
+
+.status-badge-lg.running {
+  color: #111;
+  background: var(--color-up);
+}
+
+.status-badge-lg.failed {
+  color: #fff;
+  background: var(--color-down);
+}
+
+/* ==========================================================================
+   Progress Bar — thin like Uptime Kuma
+   ========================================================================== */
+
+.progress-bar-container {
+  width: 80px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-pill);
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-pill);
+  transition: width 0.6s ease;
+  background: var(--color-up);
+}
+
+.progress-bar-fill.has-failures {
+  background: var(--color-down);
+}
+
+.step-count {
+  font-size: 12px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   Percentage Badge — like Uptime Kuma's "100.51%"
+   ========================================================================== */
+
+.pct-badge {
+  font-size: 11px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--color-up);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+
+.pct-badge.down {
+  background: var(--color-down);
+}
+
+/* ==========================================================================
+   DAG Visualization
+   ========================================================================== */
+
+.dag-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 24px 0;
+}
+
+.dag-layer {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  position: relative;
+}
+
+.dag-connector {
+  display: flex;
+  justify-content: center;
+  height: 28px;
+  position: relative;
+}
+
+.dag-connector::after {
+  content: "";
+  width: 2px;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  display: block;
+}
+
+.dag-node {
+  background: var(--bg-card);
+  border: 2px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 14px 22px;
+  min-width: 150px;
+  text-align: center;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.dag-node:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-hover);
+}
+
+.dag-node.completed {
+  border-color: var(--color-up);
+  box-shadow:
+    0 0 16px var(--color-up-glow),
+    0 0 0 1px var(--color-up-glow);
+}
+
+.dag-node.running {
+  border-color: var(--color-up);
+  box-shadow: 0 0 16px var(--color-up-glow);
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+.dag-node.failed {
+  border-color: var(--color-down);
+  box-shadow: 0 0 16px var(--color-down-glow);
+}
+
+.dag-node.spawned {
+  border-color: var(--color-spawned);
+  border-style: dashed;
+}
+
+.dag-node-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 3px;
+}
+
+.dag-node-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.dag-node-agent {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.dag-node-status {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dag-node-status.completed {
+  background: var(--color-up);
+}
+.dag-node-status.running {
+  background: var(--color-up);
+  animation: pulse-dot 1.5s ease-in-out infinite;
+}
+.dag-node-status.pending {
+  background: var(--color-up);
+  opacity: 0.6;
+}
+.dag-node-status.failed {
+  background: var(--color-down);
+}
+
+.fan-out-badge {
+  font-size: 10px;
+  color: var(--color-up);
+  background: var(--color-up-bg);
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  margin-top: 6px;
+  display: inline-block;
+}
+
+/* ==========================================================================
+   Task Detail Header — clean like Uptime Kuma detail view
+   ========================================================================== */
+
+.task-detail-header {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-lg);
+  padding: 18px 24px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.task-detail-info h2 {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 4px;
+  letter-spacing: -0.3px;
+}
+
+.task-detail-meta {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.task-detail-meta code {
+  font-family: "SF Mono", "Cascadia Code", "Fira Code", monospace;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   Info Cards — Workflow & Agent cards
+   ========================================================================== */
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 14px;
+}
+
+.info-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  transition: all 0.2s ease;
+}
+
+.info-card:hover {
+  border-color: var(--border-hover);
+}
+
+.info-card h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 5px;
+}
+
+.info-card p {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.info-card-detail {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.info-card-detail strong {
+  color: var(--text-secondary);
+}
+
+.step-list {
+  list-style: none;
+  margin-top: 10px;
+}
+
+.step-list li {
+  font-size: 12px;
+  color: var(--text-secondary);
+  padding: 5px 0;
+  border-top: 1px solid var(--border-subtle);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.step-list li:first-child {
+  border-top: none;
+}
+
+.step-arrow {
+  color: var(--color-up);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+/* ==========================================================================
+   Forms — dark inputs like Uptime Kuma
+   ========================================================================== */
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+
+.form-select,
+.form-input,
+.form-textarea {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border-card);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.form-select:focus,
+.form-input:focus,
+.form-textarea:focus {
+  border-color: var(--color-up);
+  box-shadow: 0 0 0 2px var(--color-up-bg);
+}
+
+.form-textarea {
+  font-family: "SF Mono", "Cascadia Code", "Fira Code", monospace;
+  font-size: 13px;
+  min-height: 120px;
+  resize: vertical;
+}
+
+.btn-primary {
+  background: var(--color-up);
+  color: #111;
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-sm);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.btn-primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ==========================================================================
+   Empty State
+   ========================================================================== */
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.empty-state-icon {
+  font-size: 42px;
+  margin-bottom: 14px;
+  opacity: 0.4;
+}
+
+.empty-state h3 {
+  font-size: 16px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text-primary);
+}
+
+.empty-state p {
+  font-size: 13px;
+  max-width: 400px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+.empty-state code {
+  font-family: "SF Mono", "Cascadia Code", "Fira Code", monospace;
+  font-size: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* ==========================================================================
+   Section Headers
+   ========================================================================== */
+
+.section-header {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  /* No text-transform: uppercase */
+  letter-spacing: 0.6px;
+  margin-bottom: 14px;
+  margin-top: 32px;
+}
+
+.section-header:first-child {
+  margin-top: 0;
+}
+
+/* ==========================================================================
+   Animations
+   ========================================================================== */
+
+@keyframes pulse-dot {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes pulse-border {
+  0%,
+  100% {
+    box-shadow: 0 0 16px var(--color-pending-glow);
+  }
+  50% {
+    box-shadow: 0 0 28px rgba(240, 173, 78, 0.3);
+  }
+}
+
+@keyframes pulse-pill {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 56px;
+  }
+
+  .brand-text,
+  .sidebar-nav .nav-link span:not(.nav-icon) {
+    display: none;
+  }
+
+  .nav-link {
+    justify-content: center;
+    padding: 10px;
+  }
+
+  .main-content {
+    margin-left: 56px;
+  }
+
+  .page-header {
+    padding: 16px 16px 0;
+  }
+
+  .content-body {
+    padding: 14px 16px 40px;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
+  }
+}

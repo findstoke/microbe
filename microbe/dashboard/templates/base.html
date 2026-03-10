@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Microbe Dashboard{% endblock %}</title>
+    <meta
+      name="description"
+      content="Microbe — Real-time AI agent workflow monitoring"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/static/style.css" />
+    <script
+      src="https://unpkg.com/htmx.org@2.0.4"
+      integrity="sha384-HGfztofotfshcF7+8n44JQL2oJmowVChPTg48S+jvZoztPfvwD79OC/LTtG6dMp+"
+      crossorigin="anonymous"
+    ></script>
+    <script src="https://unpkg.com/htmx-ext-ws@2.0.2/ws.js"></script>
+  </head>
+  <body>
+    <div class="app-layout">
+      <!-- Sidebar -->
+      <nav class="sidebar">
+        <div class="sidebar-brand">
+          <span class="brand-icon">🦠</span>
+          <span class="brand-text">Microbe</span>
+        </div>
+        <ul class="sidebar-nav">
+          <li>
+            <a
+              href="/"
+              class="nav-link {% if request.url.path == '/' %}active{% endif %}"
+            >
+              <svg
+                class="nav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <rect x="3" y="3" width="7" height="7" rx="1" />
+                <rect x="14" y="3" width="7" height="7" rx="1" />
+                <rect x="3" y="14" width="7" height="7" rx="1" />
+                <rect x="14" y="14" width="7" height="7" rx="1" />
+              </svg>
+              Tasks
+            </a>
+          </li>
+          <li>
+            <a
+              href="/workflows"
+              class="nav-link {% if request.url.path == '/workflows' %}active{% endif %}"
+            >
+              <svg
+                class="nav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M12 3v18M3 12h18M7.5 7.5l9 9M16.5 7.5l-9 9" />
+              </svg>
+              Workflows
+            </a>
+          </li>
+          <li>
+            <a
+              href="/run"
+              class="nav-link {% if request.url.path == '/run' %}active{% endif %}"
+            >
+              <svg
+                class="nav-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polygon points="5,3 19,12 5,21" />
+              </svg>
+              Run
+            </a>
+          </li>
+        </ul>
+        <div class="sidebar-footer">
+          <span class="version-badge">v0.1.0</span>
+        </div>
+      </nav>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <header class="page-header">
+          <h1 id="page-title">{% block page_title %}Dashboard{% endblock %}</h1>
+          {% block page_actions %}{% endblock %}
+        </header>
+        <div class="content-body">{% block content %}{% endblock %}</div>
+      </main>
+    </div>
+  </body>
+</html>

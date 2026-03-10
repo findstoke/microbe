@@ -1,0 +1,39 @@
+{% if tasks %}
+<div class="task-grid">
+  {% for task in tasks %} {% set stats = task_stats.get(task.id, {}) %}
+  <a href="/tasks/{{ task.id }}" class="task-card">
+    <div class="task-status-dot {{ task.status }}"></div>
+    <div class="task-info">
+      <div class="task-workflow-name">{{ task.workflow_id }}</div>
+      <div class="task-id">{{ task.id[:12] }}…</div>
+    </div>
+    <div class="task-meta">
+      {% if stats.total > 0 %}
+      <div class="heartbeat-bar">
+        {% for _ in range(stats.completed) %}
+        <div class="beat"></div>
+        {% endfor %} {% for _ in range(stats.running) %}
+        <div class="beat pending"></div>
+        {% endfor %} {% for _ in range(stats.failed) %}
+        <div class="beat down"></div>
+        {% endfor %} {% set remaining = stats.total - stats.completed -
+        stats.running - stats.failed %} {% for _ in range(remaining) %}
+        <div class="beat empty"></div>
+        {% endfor %}
+      </div>
+      {% endif %}
+      <span class="status-pill {{ task.status }}">{{ task.status }}</span>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon">📋</div>
+  <h3>No tasks yet</h3>
+  <p>
+    Run a workflow with <code>microbe run --workflow &lt;name&gt;</code> or use
+    the Run page to start one.
+  </p>
+</div>
+{% endif %}

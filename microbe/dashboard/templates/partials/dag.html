@@ -1,0 +1,33 @@
+{% if dag_layers %}
+<div class="dag-container">
+  {% for layer in dag_layers %} {% if not loop.first %}
+  <div class="dag-connector"></div>
+  {% endif %}
+
+  <div class="dag-layer">
+    {% for group in layer %}
+    <div
+      class="dag-node {{ group.steps[0].status }}{% if group.steps[0].spawned_by %} spawned{% endif %}"
+    >
+      <div class="dag-node-header">
+        <span class="dag-node-status {{ group.steps[0].status }}"></span>
+        <span class="dag-node-name">{{ group.step_def_id }}</span>
+      </div>
+      <div class="dag-node-agent">{{ group.agent_type }}</div>
+      {% if group.is_fan_out %}
+      <div class="fan-out-badge">
+        <span style="font-size: 14px">×{{ group.steps|length }}</span> fan-out
+      </div>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon">🔄</div>
+  <h3>Waiting for steps...</h3>
+  <p>The workflow is initializing.</p>
+</div>
+{% endif %}

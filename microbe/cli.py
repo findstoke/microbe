@@ -4,10 +4,13 @@ Microbe CLI — Project scaffolding and local execution.
 Commands:
     microbe init <name>        — Scaffold a new project
     microbe new-agent <name>   — Add an agent to the current project
-    microbe run                — Start orchestrator + agent workers
-    microbe run --agent <name> — Start a specific agent worker
+    microbe run                — Start orchestrator + agent workers (embedded)
+    microbe run --agent <name> — Start a specific agent worker (Arq mode)
+    microbe dashboard          — Start the web dashboard
 """
 
+import asyncio
+import json
 import os
 import shutil
 import subprocess
@@ -105,15 +108,13 @@ def init(name: str):
 
     # Gitignore
     (project_dir / ".gitignore").write_text(
-        "__pycache__/\n*.py[cod]\nvenv/\n.venv/\n.env\n"
+        "__pycache__/\n*.py[cod]\nvenv/\n.venv/\n.env\nmicrobe.db\n"
     )
 
     click.echo(f"\n✅ Project created at ./{name}/")
     click.echo(f"\nNext steps:")
     click.echo(f"  cd {name}")
     click.echo(f"  cp .env.example .env")
-    click.echo(f"  docker compose up -d")
-    click.echo(f"  pip install microbe")
     click.echo(f"  microbe run")
 
 
@@ -155,18 +156,111 @@ def new_agent(name: str):
 @click.option(
     "--agent",
     default=None,
-    help="Run a specific agent worker only.",
+    help="Run a specific agent worker only (Arq mode).",
 )
-def run(agent: Optional[str]):
-    """Start the orchestrator and/or agent workers."""
-    if agent:
-        click.echo(f"🦠 Starting worker for agent: {agent}")
-        # In a real implementation, this would start an Arq worker
-        # filtered to the specific agent_type
-        _start_worker(agent_filter=agent)
-    else:
-        click.echo("🦠 Starting Microbe orchestrator + all agent workers...")
-        _start_all()
+@click.option(
+    "--workflow",
+    default=None,
+    help="Start a workflow immediately on run.",
+)
+@click.option(
+    "--trigger",
+    default=None,
+    help='Trigger data as JSON string, e.g. \'{"query": "hello"}\'.',
+)
+@click.option(
+    "--redis-url",
+    default=None,
+    envvar="REDIS_URL",
+    help="Redis URL for production mode (uses Arq workers).",
+)
+@click.option(
+    "--database-url",
+    default=None,
+    envvar="DATABASE_URL",
+    help="Database URL (default: sqlite+aiosqlite:///microbe.db).",
+)
+def run(
+    agent: Optional[str],
+    workflow: Optional[str],
+    trigger: Optional[str],
+    redis_url: Optional[str],
+    database_url: Optional[str],
+):
+    """Start the orchestrator and agent workers.
+
+    \b
+    Default (embedded mode):
+      Uses in-memory queue + SQLite. No external services needed.
+
+    \b
+    Production mode (with --redis-url):
+      Uses Redis + Arq workers. Requires docker compose up -d.
+    """
+    # Parse trigger data
+    trigger_data = None
+    if trigger:
+        try:
+            trigger_data = json.loads(trigger)
+        except json.JSONDecodeError:
+            click.echo("Error: --trigger must be valid JSON.", err=True)
+            sys.exit(1)
+
+    # Production mode: use Arq workers with Redis
+    if redis_url or agent:
+        if agent:
+            click.echo(f"🦠 Starting Arq worker for agent: {agent}")
+            _start_worker(agent_filter=agent)
+        else:
+            click.echo(
+                "🦠 Starting Microbe in production mode (Arq + Redis)..."
+            )
+            _start_all()
+        return
+
+    # Embedded mode: single-process with in-memory queue + SQLite
+    from microbe.runner import EmbeddedRunner
+
+    runner = EmbeddedRunner(database_url=database_url)
+    asyncio.run(
+        runner.run(workflow=workflow, trigger=trigger_data)
+    )
+
+
+@cli.command()
+@click.option(
+    "--port",
+    default=8420,
+    help="Port for the dashboard server.",
+)
+@click.option(
+    "--host",
+    default="0.0.0.0",
+    help="Host for the dashboard server.",
+)
+@click.option(
+    "--database-url",
+    default=None,
+    envvar="DATABASE_URL",
+    help="Database URL (must match the runner's database).",
+)
+def dashboard(port: int, host: str, database_url: Optional[str]):
+    """Start the Microbe web dashboard."""
+    try:
+        import uvicorn
+
+        from microbe.dashboard import create_app
+    except ImportError:
+        click.echo(
+            "Dashboard dependencies not installed.\n"
+            "Install with: pip install microbe[dashboard]",
+            err=True,
+        )
+        sys.exit(1)
+
+    click.echo(f"🦠 Microbe Dashboard starting on http://{host}:{port}")
+    app = create_app(database_url=database_url)
+    uvicorn.run(app, host=host, port=port)
 
 
 def _start_worker(agent_filter: str):

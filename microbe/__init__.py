@@ -9,6 +9,8 @@ from microbe.agent import Agent, StepResult, UniversalAgent
 from microbe.orchestrator import Orchestrator
 from microbe.workflow import Workflow
 from microbe.llm import LLMProvider, LLMProviderRegistry, provider_registry
+from microbe.queue import InMemoryQueue
+from microbe.runner import EmbeddedRunner
 
 __version__ = "0.1.0"
 
@@ -21,4 +23,6 @@ __all__ = [
     "LLMProvider",
     "LLMProviderRegistry",
     "provider_registry",
+    "InMemoryQueue",
+    "EmbeddedRunner",
 ]

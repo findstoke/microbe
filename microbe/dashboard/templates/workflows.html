@@ -1,0 +1,55 @@
+{% extends "base.html" %} {% block title %}Workflows — Microbe Dashboard{%
+endblock %} {% block page_title %}Workflows & Agents{% endblock %} {% block
+content %}
+<!-- Workflows -->
+<h3 class="section-header">Workflows</h3>
+{% if workflows %}
+<div class="card-grid">
+  {% for wf in workflows %}
+  <div class="info-card">
+    <h3>{{ wf.name }}</h3>
+    <p>{{ wf.description or 'No description' }}</p>
+    <ul class="step-list">
+      {% for step in wf.steps %}
+      <li>
+        <span class="step-arrow">→</span>
+        <strong>{{ step.id }}</strong>
+        <span style="color: var(--text-muted)">({{ step.agent }})</span>
+        {% if step.foreach %}<span class="fan-out-badge">fan-out</span>{% endif
+        %}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon">📂</div>
+  <h3>No workflows found</h3>
+  <p>Add YAML workflow files to the <code>workflows/</code> directory.</p>
+</div>
+{% endif %}
+
+<!-- Agents -->
+<h3 class="section-header">Agents</h3>
+{% if agents %}
+<div class="card-grid">
+  {% for agent in agents %}
+  <div class="info-card">
+    <h3>{{ agent.name }}</h3>
+    <p>{{ agent.description or 'No description' }}</p>
+    <div class="info-card-detail">
+      Model: <strong>{{ agent.model or 'default' }}</strong> · Provider:
+      <strong>{{ agent.provider or 'auto' }}</strong>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+  <div class="empty-state-icon">🤖</div>
+  <h3>No agents found</h3>
+  <p>Add YAML agent files to the <code>agents/</code> directory.</p>
+</div>
+{% endif %} {% endblock %}

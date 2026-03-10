@@ -15,25 +15,26 @@ Most agent frameworks (LangChain, CrewAI) define all steps upfront in code. This
 Microbe is different:
 
 - **Runtime DAG expansion** — agents can spawn new steps mid-execution. The graph reflects reality, not assumptions.
+- **Microbe Dashboard** — real-time DAG visualization and monitoring. See your agents move blocks and spawn work.
 - **Independently deployable agents** — each agent is its own worker process. Scale searchers separately from planners.
+- **Zero-infrastructure mode** — run locally with zero config (SQLite + In-memory queue). No Docker or Redis required.
 - **YAML-first** — workflows and agents are YAML files. Edit them without touching code. Non-technical collaborators can adjust workflows directly.
 - **Single shared queue** — one Redis queue, workers filter by `agent_type`. Operational complexity doesn't scale with agent count.
 
 ## Quick Start
 
 ```bash
-pip install microbe
+pip install "microbe[dashboard]"
 
 # Scaffold a new project
 microbe init my-project
 cd my-project
 
-# Set up infrastructure
-cp .env.example .env
-docker compose up -d
-
 # Add your API keys to .env, then:
 microbe run
+
+# In a new terminal, open the visual dashboard:
+microbe dashboard
 ```
 
 ## How It Works
@@ -81,16 +82,24 @@ steps:
       results: "{{ steps.search.output.* }}"
 ```
 
-### 3. Run
+### 3. Run & Visualize
 
 ```bash
-# Start all workers
+# Start the local embedded runner (SQLite + Memory Queue)
 microbe run
 
-# Or scale specific agents
-microbe run --agent searcher  # Run 3 of these
-microbe run --agent planner   # Run 1 of these
+# Open the dashboard (FastAPI + HTMX + WebSocket)
+microbe dashboard --port 8420
 ```
+
+## Dashboard
+
+Microbe includes a real-time monitoring dashboard inspired by **Uptime Kuma**. It features:
+
+- **Live DAG Visualization**: Watch steps move from pending to running to completed.
+- **Heartbeat Bars**: Visual health check of all your active tasks and step progress.
+- **Fan-out Badges**: Deep visibility into parallelized `foreach` steps and dynamic spawning.
+- **Historical Analysis**: Review past execution results, token usage, and error logs.
 
 ## Key Concepts
 
@@ -157,8 +166,9 @@ class MyAgent(Agent):
 ```bash
 microbe init <name>         # Scaffold a project
 microbe new-agent <name>    # Add an agent
-microbe run                 # Start all workers
-microbe run --agent <name>  # Start one worker
+microbe run                 # Start local embedded runner
+microbe run --redis-url ... # Start production workers
+microbe dashboard           # Launch the web dashboard
 ```
 
 ## License
