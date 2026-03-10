@@ -4,7 +4,7 @@ I'm still actively working on adding in additional error handling and publishing
 
 # Clone and install locally
 ```bash
-git clone https://github.com/joshb/microbe.git
+git clone https://github.com/findstoke/microbe.git
 cd microbe
 pip install -e ".[dashboard]"
 ```
