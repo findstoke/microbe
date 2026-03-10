@@ -23,12 +23,12 @@ Most agent frameworks (LangChain, CrewAI) define all steps upfront in code. This
 
 Microbe is different:
 
-- **Runtime DAG expansion** — agents can spawn new steps mid-execution. The graph reflects reality, not assumptions.
-- **Microbe Dashboard** — real-time DAG visualization and monitoring. See your agents move blocks and spawn work.
-- **Independently deployable agents** — each agent is its own worker process. Scale searchers separately from planners.
-- **Zero-infrastructure mode** — run locally with zero config (SQLite + In-memory queue). No Docker or Redis required.
-- **YAML-first** — workflows and agents are YAML files. Edit them without touching code. Non-technical collaborators can adjust workflows directly.
-- **Single shared queue** — one Redis queue, workers filter by `agent_type`. Operational complexity doesn't scale with agent count.
+- **Runtime DAG expansion** -> agents can spawn new steps mid-execution. The graph reflects reality, not assumptions.
+- **Microbe Dashboard** -> real-time DAG visualization and monitoring. See your agents move blocks and spawn work.
+- **Independently deployable agents** -> each agent is its own worker process. Scale searchers separately from planners.
+- **Zero-infrastructure mode** -> run locally with zero config (SQLite + In-memory queue). No Docker or Redis required.
+- **YAML-first** -> workflows and agents are YAML files. Edit them without touching code. Non-technical collaborators can adjust workflows directly.
+- **Single shared queue** -> one Redis queue, workers filter by `agent_type`. Operational complexity doesn't scale with agent count.
 
 ## Quick Start
 
