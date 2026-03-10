@@ -1,12 +1,9 @@
 ### Note: 
 
-I'm still actively working on adding in additional error handling and publishing to PyPI. If you want to try it, clone the repo and then run the commands from inside the cloned repository.
+I'm still actively working on adding in additional error handling and publishing to PyPI. If you want to try it, you can install via:
 
-# Clone and install locally
 ```bash
-git clone https://github.com/findstoke/microbe.git
-cd microbe
-pip install -e ".[dashboard]"
+pip install git+https://github.com/findstoke/microbe.git
 ```
 
 
